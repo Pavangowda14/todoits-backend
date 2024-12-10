@@ -24,8 +24,7 @@ export const createTask=(req,res)=>{
 }
 
 export const findAllTask=(req,res)=>{
-    
-    Task.findAll((err,result)=>{
+    Task.findAll(req.query.projectid,(err,result)=>{
         if(err){
             res.status(500).send({message:"error occurred"})
         }
@@ -58,21 +57,6 @@ export const updateById=(req,res)=>{
         }
         else{
             res.status(201).send({message:"updated successfully",result})
-        }
-    })
-}
-
-export const findByProjectId=(req,res)=>{
-    if(!req.params.id){
-        res.status(400).send({message:"id required for retrieving"})
-        return
-    }
-    Task.findByProjectId(req.params.id,(err,result)=>{
-        if(err){
-            res.status(500).send({message:"some error occurred while retrieving"})
-        }
-        else{
-            res.status(200).send({result})
         }
     })
 }

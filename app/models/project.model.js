@@ -58,6 +58,7 @@ Project.deleteAll=(result)=>{
     result(null,res);
   })
 }
+
 Project.updateById = (id, project, result) => {
   console.log(project);
   sql.query(
@@ -75,4 +76,33 @@ Project.updateById = (id, project, result) => {
   );
 };
 
+Project.findById=(id,result)=>{
+  sql.query(`select * from projects where id=${id}`,(err,res)=>{
+      if(err){
+          console.log(err);
+          result(err,null)
+          return
+      }
+      console.log(res)
+      result(null,res)
+  })
+}
+
+Project.findByName = (name, result) => {
+  const query = "SELECT * FROM projects WHERE pname = ?";
+  sql.query(query, [name], (err, res) => {
+      if (err) {
+          console.log("Error while finding project by name:", err);
+          result(err, null);
+          return;
+      }
+
+      if (res.length) {
+          console.log("Project found:", res[0]);
+          result(null, res[0]);
+      } else {
+          result(null, null); 
+      }
+  });
+};
 export default Project;

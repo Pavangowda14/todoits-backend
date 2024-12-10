@@ -1,29 +1,49 @@
 import Project from "../models/project.model.js";
 
-export const createProject=(req,res)=>{
-    if(!req.body.pname || !req.body.color){
+export const createProject = (req, res) => {
+    if (!req.body.pname || !req.body.color) {
         res.status(400).send({
-            message:"all fields are required"
-        })
-        return
+            message: "All fields are required",
+        });
+        return;
     }
-    const project=new Project({pname:req.body.pname,color:req.body.color,is_favorite:req.body.favorite || false})
-    console.log(project,req.body.pname)
-    Project.create(project,(err,result)=>{
-        if(err){
-            res.status(500).send({
-                message:"some error occured while creating a project"
-            })
-        }
-        else{
-            res.status(201).send({
-                message:"project created",
-                result
 
-            })
+    Project.findByName(req.body.pname, (err, existingProject) => {
+        if (err) {
+            res.status(500).send({
+                message: "Error occurred while checking for existing project",
+            });
+            return;
         }
-    })
-}
+
+        if (existingProject) {
+            res.status(400).send({
+                message: "A project with the same name already exists",
+            });
+            return;
+        }
+
+        const project = new Project({
+            pname: req.body.pname,
+            color: req.body.color,
+            is_favorite: req.body.favorite || false,
+        });
+
+        Project.create(project, (err, result) => {
+            if (err) {
+                res.status(500).send({
+                    message: "Some error occurred while creating a project",
+                });
+            } else {
+                res.status(201).send({
+                    message: "Project created successfully",
+                    result,
+                });
+            }
+        });
+    });
+};
+
 
 export const findAllProject=(req,res)=>{
     Project.findAll(req.query.name,(err,result)=>{
@@ -82,7 +102,7 @@ export const findById=(req,res)=>{
         res.status(400).send({message:"id required for retrieving"})
         return
     }
-    Task.findById(req.params.id,(err,result)=>{
+    Project.findById(req.params.id,(err,result)=>{
         if(err){
             res.status(500).send({message:"some error occurred while retrieving"})
         }

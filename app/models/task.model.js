@@ -21,9 +21,11 @@ Task.create = (task, result) => {
     });
   };
   
-  Task.findAll = (result) => {
+  Task.findAll = (projectId,result) => {
     let query = "select * from tasks ";
-  
+    if(projectId){
+      query+=`where projectid=${projectId}`
+    }
     sql.query(query, (err, res) => {
       if (err) {
         console.log(err);
