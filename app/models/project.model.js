@@ -1,108 +1,59 @@
 import sql from "./db.js";
 
 const Project = function (project) {
-  this.pname = project.pname;
+  this.project_name = project.project_name;
   this.color = project.color;
-  this.is_favorite = project.is_favorite;
+  this.is_favorite = project.is_favorite || false;
+  this.user_id=project.user_id;
 };
 
-Project.create = (project, result) => {
-  sql.query("INSERT INTO projects SET ?", project, (err, res) => {
-    if (err) {
-      console.log(err);
-      result(err, null);
-      return;
-    }
-    console.log({ id: res.insertId, ...project });
-    result(null, { id: res.insertId, ...project });
-  });
-};
-
-Project.findAll = (name, result) => {
-  let query = "select * from projects ";
-  if (name) {
-    query += `where id=${name}`;
-  }
-
-  sql.query(query, (err, res) => {
-    if (err) {
-      console.log(err);
-      result(err, null);
-      return;
-    }
-    console.log(res);
-    result(null, res);
-  });
-};
-
-Project.delete = (id, result) => {
-  sql.query("delete from projects where id=?", id, (err, res) => {
-    if (err) {
-      console.log(err);
-      result(err, null);
-      return;
-    }
-    console.log("row deleted", res);
-    result(null, res);
-  });
-};
-
-Project.deleteAll=(result)=>{
-  sql.query("delete from projects",(err,res)=>{
-    if(err){
-      console.log(err)
-      result(err,null)
-      return
-    }
-    console.log(res)
-    result(null,res);
-  })
-}
-
-Project.updateById = (id, project, result) => {
-  console.log(project);
-  sql.query(
-    "update projects set pname=?, color=?, is_favorite=? where id=?",
-    [project.pname, project.color, project.is_favorite || false, id],
-    (err, res) => {
-      if (err) {
-        console.log(err);
-        result(err, null);
-        return;
-      }
-      console.log(res);
-      result(null, res);
-    }
-  );
-};
-
-Project.findById=(id,result)=>{
-  sql.query(`select * from projects where id=${id}`,(err,res)=>{
+function sqlPromise(query,parameters=[]){
+  return new Promise((resolve,reject)=>{
+    sql.query(query,parameters,(err,res)=>{
       if(err){
-          console.log(err);
-          result(err,null)
-          return
+        console.log(err)
+        reject(err)
       }
-      console.log(res)
-      result(null,res)
+      else{
+        resolve(res)
+      }
+    })
   })
 }
 
-Project.findByName = (name, result) => {
-  const query = "SELECT * FROM projects WHERE pname = ?";
-  sql.query(query, [name], (err, res) => {
-      if (err) {
-          console.log("Error while finding project by name:", err);
-          result(err, null);
-          return;
-      }
-
-      if (res.length) {
-          console.log("Project found:", res[0]);
-          result(null, res[0]);
-      } else {
-          result(null, null); 
-      }
-  });
+Project.create = (project) => {
+  const query="INSERT INTO projects (project_name, color, is_favorite,user_id) values(?,?,?,?)"
+  const para=[project.project_name,project.color,project.is_favorite,project.user_id]
+  return sqlPromise(query,para)
 };
+
+Project.findAll = (filter) => {
+  const query = "select * from projects ";
+  console.log(filter)
+  return sqlPromise(query)
+};
+
+Project.delete = (id) => {
+  const query="delete from projects where id=?"
+  const para=[id]
+  return sqlPromise(query,para)
+};
+
+Project.deleteAll=()=>{
+  const query="delete from projects"
+  return sqlPromise(query)
+}
+
+Project.updateById = (id, project) => {
+  const query="update projects set project_name=?, color=?, is_favorite=?, user_id=? where id=?"
+  const para=[project.pname, project.color, project.is_favorite || false, project.user_id,id]
+  return sqlPromise(query,para)
+};
+
+Project.findById=(id)=>{
+  const query="select * from projects where id=?"
+  const para=[id]
+  return sqlPromise(query,para)
+}
+
 export default Project;

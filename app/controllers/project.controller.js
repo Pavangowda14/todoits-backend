@@ -1,113 +1,114 @@
 import Project from "../models/project.model.js";
+import * as Yup from "yup";
 
-export const createProject = (req, res) => {
-    if (!req.body.pname || !req.body.color) {
-        res.status(400).send({
-            message: "All fields are required",
-        });
-        return;
+const schema = Yup.object().shape({
+  project_name: Yup.string().required("Project name is required"),
+  color: Yup.string().strict().required("Color is required"),
+  is_favorite: Yup.boolean("is_favorite must be a boolean value").notRequired(),
+  user_id: Yup.number()
+    .positive("User ID must be a positive number")
+    .integer("User ID must be an integer")
+    .required("User ID is required"),
+});
+
+export const createProject = async (req, res) => {
+  try {
+    const validatedData = await schema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    const project = new Project(validatedData);
+    const result = await Project.create(project);
+
+    res.status(201).send({ result });
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).send({
+        message: "Validation error",
+        errors: error,
+      });
     }
 
-    Project.findByName(req.body.pname, (err, existingProject) => {
-        if (err) {
-            res.status(500).send({
-                message: "Error occurred while checking for existing project",
-            });
-            return;
-        }
-
-        if (existingProject) {
-            res.status(400).send({
-                message: "A project with the same name already exists",
-            });
-            return;
-        }
-
-        const project = new Project({
-            pname: req.body.pname,
-            color: req.body.color,
-            is_favorite: req.body.favorite || false,
-        });
-
-        Project.create(project, (err, result) => {
-            if (err) {
-                res.status(500).send({
-                    message: "Some error occurred while creating a project",
-                });
-            } else {
-                res.status(201).send({
-                    message: "Project created successfully",
-                    result,
-                });
-            }
-        });
+    res.status(500).send({
+      message: "An error occurred while creating the project",
+      error: error.message,
     });
+  }
 };
 
+export const findAllProject = async (req, res) => {
+  try {
+    const result = await Project.findAll();
+    res.status(200).send({ result });
+  } catch (error) {
+    res
+      .status(500)
+      .send({
+        message: "error occured while retrieving projects",
+        error: error.message,
+      });
+  }
+};
 
-export const findAllProject=(req,res)=>{
-    Project.findAll(req.query.name,(err,result)=>{
-        if(err){
-            res.status(500).send({message:"error occured while retrieving projects"})
-        }
-        else{
-            res.status(200).send(result)
-        }
-    })
-}
+export const deleteById = async (req, res) => {
+  try {
+    const result = await Project.delete(req.params.id);
+    res.status(200).send({ result });
+  } catch (error) {
+    res
+      .status(500)
+      .send({
+        message: "error occured while deleting project",
+        error: error.message,
+      });
+  }
+};
 
-export const deleteById=(req,res)=>{
-    if(!req.params.id){
-        res.status(400).send({message:"id required for deletion"})
-        return
-    }
-    Project.delete(req.params.id,(err,result)=>{
-        if(err){
-            res.status(500).send({message:"some error occured while deleting"})
-        }
-        else{
-            res.status(200).send({message:"deleted succesfully",result})
-        }
-    })
-}
+export const deleteAll = async (req, res) => {
+  try {
+    const result = await Project.deleteAll();
+    res.status(200).send({ result });
+  } catch (error) {
+    res
+      .status(500)
+      .send({
+        message: "error occured while deleting projects",
+        error: error.message,
+      });
+  }
+};
 
-export const deleteAll=(req,res)=>{
-    Project.deleteAll((err,result)=>{
-        if(err){
-            res.status(500).send({message:"some error occured while deleting"})
-        }
-        else{
-            res.status(200).send({message:"deleted succesfully",result})
-        }
-    })
-}
+export const updateById = async (req, res) => {
+  try {
+    const validatedData = await schema.validate(req.body, {
+      abortEarly: false,
+    });
+    const result = await Project.updateById(
+      req.params.id,
+      new Project(validatedData)
+    );
+    res.status(200).send({ result });
+  } catch (error) {
+    res
+      .status(500)
+      .send({
+        message: "error occured while updating project",
+        error: error.message,
+      });
+  }
+};
 
-
-export const updateById=(req,res)=>{
-    if(!req.body){
-        res.status(400).send({message:"require all the fields"})
-    }
-    Project.updateById(req.params.id,new Project(req.body),(err,result)=>{
-        if(err){
-            res.status(500).send({message:"some error occured while updating"})
-        }
-        else{
-            res.status(201).send({message:"updated successfully",result})
-        }
-    })
-}
-
-export const findById=(req,res)=>{
-    if(!req.params.id){
-        res.status(400).send({message:"id required for retrieving"})
-        return
-    }
-    Project.findById(req.params.id,(err,result)=>{
-        if(err){
-            res.status(500).send({message:"some error occurred while retrieving"})
-        }
-        else{
-            res.status(200).send({result})
-        }
-    })
-}
+export const findById = async (req, res) => {
+  try {
+    const result = await Project.findById(req.params.id);
+    res.status(200).send({ result });
+  } catch (error) {
+    console.log(error);
+    res
+      .status(500)
+      .send({
+        message: "error occured while retrieving project",
+        error: error.message,
+      });
+  }
+};
