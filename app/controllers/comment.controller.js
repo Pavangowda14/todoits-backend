@@ -4,7 +4,9 @@ import * as Yup from "yup";
 const schema=Yup.object().shape({
     content:Yup.string().required("comment content is required"),
     posted_at:Yup.date().required("posted date is required"),
-    comment_for:Yup.string().required(""),
+    comment_for: Yup.string()
+    .oneOf(['project', 'task'], "comment_for must be 'project' or 'task'")
+    .required("comment_for is required"),
     project_id:Yup.number().positive().integer().notRequired(),
     task_id:Yup.number().positive().integer().notRequired()
 })
