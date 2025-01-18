@@ -1,9 +1,19 @@
 import User from "../models/user.model.js";
 import * as Yup from "yup";
+import jsonwebtoken from "jsonwebtoken";
+import { hashSync, genSaltSync, compareSync } from "bcrypt";
 
 const schema = Yup.object().shape({
-  name: Yup.string("enter user name").required("name is required"),
-  email: Yup.string("enter valid email").email("enter valid email").required("email is required"),
+  first_name: Yup.string("enter user first name").required(
+    "first_name is required"
+  ),
+  last_name: Yup.string("enter user last name").required(
+    "last name is required"
+  ),
+  email: Yup.string("enter valid email")
+    .email("enter valid email")
+    .required("email is required"),
+  password: Yup.string("enter a password").required("password is required"),
 });
 
 export const createUser = async (req, res) => {
@@ -11,12 +21,76 @@ export const createUser = async (req, res) => {
     const validatedData = await schema.validate(req.body, {
       abortEarly: false,
     });
-    const result = await User.create(new User(validatedData));
-    res.status(201).send({ result });
+    const salt = genSaltSync(10);
+    const userData = {
+      ...validatedData,
+      password: hashSync(validatedData.password, salt),
+    };
+    const result = await User.create(new User(userData));
+    const user={id:result.insertId,...userData}
+    console.log(user)
+    const jsontoken = jsonwebtoken.sign(
+      { user: user },
+      process.env.SECRET_KEY,
+      { expiresIn: "30m" }
+    );
+    console.log(12)
+    res.cookie("token", jsontoken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "strict",
+      expires: new Date(Number(new Date()) + 30 * 60 * 1000),
+    });
+    console.log(123)
+    res.json({ token: jsontoken, user });
   } catch (error) {
     res.status(500).send({
-      message: "error occured while creating user",
-      error: error.errors,
+      message: `error occured while creating user`,
+      error: error,
+    });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).send({ message: "email and password required" });
+      return;
+    }
+    let user = await User.findByEmail(email);
+    user = user[0];
+    if (!user) {
+      return res.status(400).send({
+        message: "Invalid email or password",
+      });
+    }
+
+    const isValidPassword = compareSync(password, user.password);
+    if (isValidPassword) {
+      user.password = undefined;
+      const jsontoken = jsonwebtoken.sign(
+        { user: user },
+        process.env.SECRET_KEY,
+        { expiresIn: "30m" }
+      );
+      res.cookie("token", jsontoken, {
+        httpOnly: true,
+        secure: false,
+        SameSite: "strict",
+        expires: new Date(Number(new Date()) + 30 * 60 * 1000),
+      }); 
+
+      res.json({ token: jsontoken, user });
+    } else {
+      return res.json({
+        message: "Invalid email or password",
+      });
+    }
+  } catch (error) {
+    res.status(500).send({
+      message: "error occured while login user",
+      error: error,
     });
   }
 };

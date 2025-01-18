@@ -1,13 +1,21 @@
 import express from "express";
-import { createProject, deleteAll, deleteById, findAllProject, findById, updateById } from "../controllers/project.controller.js";
+import {
+  createProject,
+  deleteAll,
+  deleteById,
+  findAllProject,
+  findById,
+  updateById,
+} from "../controllers/project.controller.js";
+import { verifyToken } from "../middleware/auth.js";
 
-const router=express.Router()
+const router = express.Router();
 
-router.post("/new",createProject)
-router.get("/",findAllProject)
-router.get("/:id",findById)
-router.delete("/remove/:id",deleteById)
-router.delete("/removeall",deleteAll)
-router.put("/update/:id",updateById)
+router.post("/new", verifyToken,createProject);
+router.get("/",verifyToken, findAllProject);
+router.get("/:id",verifyToken, findById);
+router.delete("/remove/:id",verifyToken, deleteById);
+router.delete("/removeall",verifyToken, deleteAll);
+router.put("/update/:id",verifyToken, updateById);
 
 export default router;

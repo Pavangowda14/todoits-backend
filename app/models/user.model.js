@@ -1,8 +1,12 @@
-import sql from "./db.js";
+import createConnection from "../models/db.js";
+
+const sql=createConnection()
 
 const User = function (user) {
-  this.name = user.name;
+  this.first_name = user.first_name;
+  this.last_name = user.last_name;
   this.email = user.email;
+  this.password=user.password
 };
 
 function sqlPromise(query, parameters = []) {
@@ -10,9 +14,9 @@ function sqlPromise(query, parameters = []) {
     sql.query(query, parameters, (err, res) => {
       if (err) {
         console.log(err);
-        reject(err);
+        return reject(err);
       } else {
-        resolve(res);
+        return resolve(res);
       }
     });
   });
@@ -20,10 +24,12 @@ function sqlPromise(query, parameters = []) {
 
 User.create = (user) => {
   const query =
-    "INSERT INTO users (name, email) values(?,?)";
+    "INSERT INTO users (first_name,last_name, email,password) values(?,?,?,?)";
   const para = [
-    user.name,
+    user.first_name,
+    user.last_name,
     user.email,
+    user.password
   ];
   return sqlPromise(query, para);
 };
@@ -50,9 +56,9 @@ User.updateById = (id, user) => {
   return sqlPromise(query, para);
 };
 
-User.findById = (id) => {
-  const query = "select * from users where id=?";
-  const para = [id];
+User.findByEmail = (email) => {
+  const query = "select * from users where email=?";
+  const para = [email];
   return sqlPromise(query, para);
 };
 

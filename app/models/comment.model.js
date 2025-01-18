@@ -1,4 +1,6 @@
-import sql from "./db.js"
+import createConnection from "../models/db.js";
+
+const sql=createConnection()
 
 const Comment=function(comment){
     this.content=comment.content;
