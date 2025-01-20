@@ -1,4 +1,4 @@
-import mysql from "mysql";
+import mysql from "mysql2";
 import dbconfig from "../config/db.config.js";
 import logger from "../utils/logger.js";
 
