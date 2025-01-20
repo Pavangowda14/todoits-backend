@@ -1,7 +1,8 @@
 import User from "../models/user.model.js";
 import * as Yup from "yup";
 import jsonwebtoken from "jsonwebtoken";
-import { hashSync, genSaltSync, compareSync } from "bcrypt";
+import bcryptjs from "bcryptjs";
+const { hashSync, genSaltSync, compareSync } = bcryptjs;
 
 const schema = Yup.object().shape({
   first_name: Yup.string("enter user first name").required(
