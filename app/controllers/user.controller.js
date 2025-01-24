@@ -22,6 +22,12 @@ export const createUser = async (req, res) => {
     const validatedData = await schema.validate(req.body, {
       abortEarly: false,
     });
+    let isNewUser = await User.findByEmail(req.body.email);
+    if (isNewUser.length) {
+      return res.status(400).send({
+        message: "User already present",
+      });
+    }
     const salt = genSaltSync(10);
     const userData = {
       ...validatedData,
@@ -29,22 +35,21 @@ export const createUser = async (req, res) => {
     };
     const result = await User.create(new User(userData));
     const user={id:result.insertId,...userData}
-    console.log(user)
+    user.password=undefined
     const jsontoken = jsonwebtoken.sign(
       { user: user },
       process.env.SECRET_KEY,
       { expiresIn: "30m" }
     );
-    console.log(12)
     res.cookie("token", jsontoken, {
       httpOnly: true,
       secure: false,
       sameSite: "strict",
       expires: new Date(Number(new Date()) + 30 * 60 * 1000),
     });
-    console.log(123)
     res.json({ token: jsontoken, user });
   } catch (error) {
+    logger.error(error)
     res.status(500).send({
       message: `error occured while creating user`,
       error: error,
@@ -89,6 +94,7 @@ export const loginUser = async (req, res) => {
       });
     }
   } catch (error) {
+    logger.error(error)
     res.status(500).send({
       message: "error occured while login user",
       error: error,

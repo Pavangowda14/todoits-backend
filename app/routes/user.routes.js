@@ -13,6 +13,12 @@ const router = express.Router();
 
 router.post("/register", createUser);
 router.post("/login", loginUser);
+router.get("/verify-token", verifyToken, (req, res) => {
+  res.status(200).json({
+    message: "Token is valid",
+    user: req.user,
+  });
+});
 // router.get("/", findAllUser);
 // router.delete("/remove/:id", deleteById);
 // router.put("/update/:id", updateById);

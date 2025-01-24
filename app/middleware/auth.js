@@ -4,7 +4,7 @@ export async function verifyToken(req, res, next) {
   const token = req.cookies?.token;
   if (!token) {
     return res.status(401).json({
-      message: "Access Denied! Unauthorized User",
+      message: "Unauthorized User",
     });
   }
 
@@ -15,12 +15,11 @@ export async function verifyToken(req, res, next) {
           message: "Invalid Token",
         });
       }
-      
       req.user = authData.user;
       next();
     });
   } catch (error) {
-    console.log(error)
+    logger.error(error)
     return res.status(500).json({
       message: "Internal Server Error",
       error: error.message,

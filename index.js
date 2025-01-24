@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 
 var corsOptions = {
-  origin: ["http://localhost:8100","http://localhost:5173"],
+  origin: ["http://localhost:8100","http://localhost:5173","https://todolist-frontend-production-6040.up.railway.app"],
   credentials:true
 };
 
@@ -29,3 +29,4 @@ const port = 8000;
 app.listen(port, () => {
   console.log("server started");
 });
+  
