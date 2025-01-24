@@ -43,7 +43,7 @@ export const createUser = async (req, res) => {
     );
     res.cookie("token", jsontoken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: "strict",
       expires: new Date(Number(new Date()) + 30 * 60 * 1000),
     });
